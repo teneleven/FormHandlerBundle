@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:gedmo="http://gediminasm.org/schemas/orm/doctrine-extensions-mapping">
+  <entity repository-class="Teneleven\Bundle\FormHandlerBundle\Entity\SubmissionRepository" name="Teneleven\Bundle\FormHandlerBundle\Entity\Submission">
+    <id name="id" type="integer" column="id">
+      <generator strategy="AUTO"/>
+    </id>
+    <field name="type" type="string" column="type" length="255"/>
+    <field name="data" type="text" column="data"/>
+    <field name="isViewed" type="boolean" column="is_viewed" nullable="true" />
+    <field name="createdAt" column="created_at" type="datetime">
+        <gedmo:timestampable on="create"/>
+    </field>
+    <field name="updatedAt" column="updated_at" type="datetime">
+        <gedmo:timestampable on="update"/>
+    </field>
+  </entity>
+</doctrine-mapping>

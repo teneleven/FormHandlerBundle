@@ -1,0 +1,4 @@
+teneleven_form_handler_submission:
+    resource: "@TenelevenFormHandlerBundle/Resources/config/routing/submission.xml"
+    prefix:   /submission
+
