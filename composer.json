@@ -1,1 +1,13 @@
-composer.json
+{
+	"name": "teneleven/formhandlerbundle",
+	"version": "0.1",
+	"source": {
+	    "type": "git",
+	    "url": "git@teneleven.beanstalkapp.com:/teneleven/formhandlerbundle.git",
+	    "reference": "master"
+	},
+	"autoload": {
+	    "psr-0": { "Teneleven\\Bundle\\FormHandlerBundle": "" }
+	},
+	"target-dir": "Teneleven/Bundle/FormHandlerBundle"
+}
