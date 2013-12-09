@@ -27,7 +27,7 @@ class Submission
     /**
      * @var boolean
      */
-    private $isViewed = false;
+    private $isViewed = 0;
 
     /**
      * @var \DateTime
