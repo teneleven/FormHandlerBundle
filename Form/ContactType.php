@@ -19,7 +19,7 @@ class ContactType extends AbstractType
             ->add('last_name')
             ->add('email')
             ->add('comment', 'text')
-            ->add('file', 'file')
+            ->add('file', 'file', array('required' => false))
         ;
     }
     
