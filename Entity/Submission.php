@@ -99,7 +99,7 @@ class Submission
     }
 
     /**
-     * Set isViewd
+     * Set isViewed
      *
      * @param boolean $isViewed
      *
@@ -119,7 +119,7 @@ class Submission
      */
     public function getIsViewed()
     {
-        return $this->isViewd;
+        return $this->isViewed;
     }
 
     /**
