@@ -12,9 +12,9 @@
         <default key="_controller">TenelevenFormHandlerBundle:Submission:form</default>
     </route>
 
-    <route id="teneleven_formhandler_sample" pattern="/sample">
+    <route id="teneleven_formhandler_sample" pattern="/contact">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:form</default>
         <default key="template">TenelevenFormHandlerBundle:Submission:form.html.twig</default>
-        <default key="type">teneleven_bundle_formhandlerbundle_submission</default>
+        <default key="type">contact_form</default>
     </route>
 </routes>
