@@ -15,6 +15,7 @@ namespace Teneleven\Bundle\FormHandlerBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use Teneleven\Bundle\FormHandlerBundle\Entity\Submission;
 use Teneleven\Bundle\FormHandlerBundle\Form\SubmissionType;
@@ -32,6 +33,8 @@ use Teneleven\Bundle\FormHandlerBundle\Form\SubmissionType;
  */
 class SubmissionController extends Controller
 {
+    protected $attachments = array();
+
     /**
      * Lists all Submission entities.
      *
@@ -67,6 +70,12 @@ class SubmissionController extends Controller
             throw $this->createNotFoundException('Unable to find Submission entity.');
         }
 
+        $entity->setIsViewed(true);
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($entity);
+        $em->flush();
+
         $data = unserialize($entity->getData());
 
         $form = $this->createForm($entity->getType(), $data);
@@ -97,6 +106,10 @@ class SubmissionController extends Controller
 
             $values = $form->getData();
 
+            $this->handleAttachments($values);
+
+            $this->sendNotificationEmail($type, $values);
+
             $submission = new Submission();
             $submission->setType($type);
             $submission->setData(serialize($values));
@@ -105,12 +118,25 @@ class SubmissionController extends Controller
             $em->persist($submission);
             $em->flush();
 
-            $this->sendNotificationEmail($type, $values);
-
             return $this->render(
                 'TenelevenFormHandlerBundle:Submission:thanks.html.twig',
                 array('submission' => $submission)
             );         
+        }
+    }
+
+    /**
+     * [handleAttachments description]
+     * @param  [type] $data [description]
+     * @return [type]       [description]
+     */
+    public function handleAttachments(&$data)
+    {
+        foreach ($data as $key => $value) {
+            if ($value instanceof UploadedFile) {
+                $this->attachments[] = $value;
+                $data[$key] = $value->getClientOriginalName();
+            }
         }
     }
 
@@ -161,6 +187,12 @@ class SubmissionController extends Controller
                         array('values' => $values)
                     )
                 );
+
+                foreach($this->attachments as $file){
+                    $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
+                    $message->attach($attachment);                    
+                }
+
 
             $result = $this->get('mailer')->send($message);   
         } catch(Exception $e) {
