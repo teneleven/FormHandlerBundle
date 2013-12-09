@@ -17,10 +17,9 @@ class SubmissionType extends AbstractType
         $builder
             ->add('type')
             ->add('data')
-            ->add('isViewd')
+            ->add('isViewed')
             ->add('createdAt')
             ->add('updatedAt')
-            ->add('save', 'submit')
         ;
     }
     
