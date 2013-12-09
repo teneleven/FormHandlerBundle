@@ -31,6 +31,15 @@ class TenelevenFormHandlerExtension extends Extension
 
     }
 
+    /**
+     * Configure Form Type Handler Settings
+     * 
+     * @param  string           $type      Form Type name
+     * @param  array            $config    [description]
+     * @param  ContainerBuilder $container [description]
+     * 
+     * @return [type]                      [description]
+     */
     protected function configureType($type, array $config, ContainerBuilder $container)
     {
         $container->setParameter('teneleven_form_handler.'.$type.'.from', $config['from']);
