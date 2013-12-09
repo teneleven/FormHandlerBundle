@@ -67,12 +67,14 @@ class SubmissionController extends Controller
             throw $this->createNotFoundException('Unable to find Submission entity.');
         }
 
-        $deleteForm = $this->createDeleteForm($id);
+        $data = unserialize($entity->getData());
+
+        $form = $this->createForm($entity->getType(), $data);
 
         return $this->render(
             'TenelevenFormHandlerBundle:Submission:show.html.twig', array(
-                'entity'      => $entity,
-                'delete_form' => $deleteForm->createView(),
+                'form'      => $form->createView(),
+                'entity'    => $entity
             )
         );
     }
@@ -87,7 +89,7 @@ class SubmissionController extends Controller
      */
     public function handleAction($type, Request $request)
     {
-        $form = $this->createForm($this->get($type));
+        $form = $this->createForm($type);
 
         $form->handleRequest($request);
 
@@ -107,9 +109,7 @@ class SubmissionController extends Controller
 
             return $this->render(
                 'TenelevenFormHandlerBundle:Submission:thanks.html.twig',
-                array(
-                    'submission' => $submission
-                )
+                array('submission' => $submission)
             );         
         }
     }
@@ -140,7 +140,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Sends Email to notification list in config
+     * Sends Email following parameters in config
      * 
      * @param string $type   Service key of Form
      * @param array  $values Array of form values
