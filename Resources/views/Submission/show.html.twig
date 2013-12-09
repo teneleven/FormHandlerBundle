@@ -6,50 +6,40 @@
 {# make the form fragment customization #}
 {% block form_row %}
     {% spaceless %}
-        <div class="control-group">
-            {{ form_label(form, label, { 'attr': { 'class': 'control-label' } }) }}
-            <div class="controls">
-                {{ form.vars.value }}
-            </div>
-        </div>
+        <tr>
+            <th>{{ form_label(form, label) }}</th>
+            <td>{{ form.vars.value }}</td>
+        </tr>
     {% endspaceless %}
 {% endblock form_row %}
 
 {% block body -%}
     <h1>Submission</h1>
 
-    <table class="record_properties">
-        <tbody>
-            <tr>
-                <th>Type</th>
-                <td>{{ entity.type }}</td>
-            </tr>
-            <tr>
-                <th>Is Viewed</th>
-                <td>{{ entity.isViewed }}</td>
-            </tr>
-            <tr>
-                <th>Createdat</th>
-                <td>{{ entity.createdAt|date('Y-m-d H:i:s') }}</td>
-            </tr>
-            <tr>
-                <th>Updatedat</th>
-                <td>{{ entity.updatedAt|date('Y-m-d H:i:s') }}</td>
-            </tr>
-            <tr>
-                <th>Id</th>
-                <td>{{ entity.id }}</td>
-            </tr>
-        </tbody>
+    <table class="table">
+        <tr>
+            <th>Id</th>
+            <th>Type</th>
+            <th>Is Viewed</th>
+            <th>Created At</th>
+        </tr>
+        <tr>
+            <td>{{ entity.id }}</td>
+            <td>{{ entity.type }}</td>
+            <td>{{ entity.isViewed }}</td>
+            <td>{{ entity.createdAt|date('M d, Y h:m:s') }}</td>
+        </tr>
     </table>
 
+    <table class="table">
+        {{ form(form) }}
+    </table>
 
-{{ form(form) }}
-        <ul class="record_actions">
-    <li>
-        <a href="{{ path('submission') }}">
-            Back to the list
-        </a>
-    </li>
-</ul>
+    <ul class="record_actions">
+        <li>
+            <a href="{{ path('submission') }}">
+                Back to the list
+            </a>
+        </li>
+    </ul>
 {% endblock %}
