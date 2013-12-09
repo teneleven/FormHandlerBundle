@@ -108,8 +108,6 @@ class SubmissionController extends Controller
 
             $this->handleAttachments($values);
 
-            $this->sendNotificationEmail($type, $values);
-
             $submission = new Submission();
             $submission->setType($type);
             $submission->setData(serialize($values));
@@ -118,16 +116,22 @@ class SubmissionController extends Controller
             $em->persist($submission);
             $em->flush();
 
+            $this->sendNotificationEmail($type, $form, $submission);
+
             return $this->render(
-                'TenelevenFormHandlerBundle:Submission:thanks.html.twig',
-                array('submission' => $submission)
+                $this->container->getParameter(sprintf('teneleven_form_handler.%s.thanks_template', $type)),
+                array(
+                    'submission' => $submission, 
+                    'form' => $form->createView()
+                )
             );         
         }
     }
 
     /**
-     * [handleAttachments description]
-     * @param  [type] $data [description]
+     * Find attachments in data array
+     * 
+     * @param  array &$data [description]
      * @return [type]       [description]
      */
     public function handleAttachments(&$data)
@@ -135,7 +139,9 @@ class SubmissionController extends Controller
         foreach ($data as $key => $value) {
             if ($value instanceof UploadedFile) {
                 $this->attachments[] = $value;
-                $data[$key] = $value->getClientOriginalName();
+
+                //Unset field because we cant serialize Objects
+                unset($data[$key]);
             }
         }
     }
@@ -168,14 +174,15 @@ class SubmissionController extends Controller
     /**
      * Sends Email following parameters in config
      * 
-     * @param string $type   Service key of Form
-     * @param array  $values Array of form values
+     * @param string $type Service key of Form
+     * @param Object $form Form
      * 
      * @return null
      */
-    protected function sendNotificationEmail($type, array $values)
+    protected function sendNotificationEmail($type, $form, $submission)
     {
         try {
+
             $message = \Swift_Message::newInstance()
                 ->setSubject($this->container->getParameter(sprintf('teneleven_form_handler.%s.subject', $type)))
                 ->setFrom($this->container->getParameter(sprintf('teneleven_form_handler.%s.from', $type)))
@@ -183,18 +190,19 @@ class SubmissionController extends Controller
                 ->setContentType($this->container->getParameter(sprintf('teneleven_form_handler.%s.content_type', $type)))
                 ->setBody(
                     $this->renderView(
-                        $this->container->getParameter(sprintf('teneleven_form_handler.%s.template', $type)),
-                        array('values' => $values)
+                        $this->container->getParameter(sprintf('teneleven_form_handler.%s.email_template', $type)),
+                        array('form' => $form->createView(), 'submission' => $submission)
                     )
-                );
+                )
+            ;
 
-                foreach($this->attachments as $file){
-                    $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
-                    $message->attach($attachment);                    
-                }
+            foreach ($this->attachments as $file) {
+                $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
+                $message->attach($attachment);                    
+            }
 
+            $result = $this->get('mailer')->send($message);
 
-            $result = $this->get('mailer')->send($message);   
         } catch(Exception $e) {
             //@todo Need to do something here
         }
