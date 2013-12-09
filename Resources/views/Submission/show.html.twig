@@ -1,5 +1,20 @@
 {% extends '::base.html.twig' %}
 
+{# import "_self" as the form theme #}
+{% form_theme form _self %}
+
+{# make the form fragment customization #}
+{% block form_row %}
+    {% spaceless %}
+        <div class="control-group">
+            {{ form_label(form, label, { 'attr': { 'class': 'control-label' } }) }}
+            <div class="controls">
+                {{ form.vars.value }}
+            </div>
+        </div>
+    {% endspaceless %}
+{% endblock form_row %}
+
 {% block body -%}
     <h1>Submission</h1>
 
@@ -10,12 +25,8 @@
                 <td>{{ entity.type }}</td>
             </tr>
             <tr>
-                <th>Data</th>
-                <td>{{ entity.data }}</td>
-            </tr>
-            <tr>
-                <th>Isviewd</th>
-                <td>{{ entity.isViewd }}</td>
+                <th>Is Viewed</th>
+                <td>{{ entity.isViewed }}</td>
             </tr>
             <tr>
                 <th>Createdat</th>
@@ -32,17 +43,13 @@
         </tbody>
     </table>
 
+
+{{ form(form) }}
         <ul class="record_actions">
     <li>
         <a href="{{ path('submission') }}">
             Back to the list
         </a>
     </li>
-    <li>
-        <a href="{{ path('submission_edit', { 'id': entity.id }) }}">
-            Edit
-        </a>
-    </li>
-    <li>{{ form(delete_form) }}</li>
 </ul>
 {% endblock %}
