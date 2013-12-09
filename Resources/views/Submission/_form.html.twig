@@ -1,1 +1,7 @@
-{{ form(form) }}
+
+{{ form_start(form) }}
+	{% for child in form.children %}
+	  {{ form_row(child) }}
+	{% endfor %}
+	<button type="submit">Submit</button>
+{{ form_end(form) }}
