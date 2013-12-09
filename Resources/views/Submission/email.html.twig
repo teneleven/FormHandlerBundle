@@ -1,1 +1,21 @@
-email.html.twig
+{% form_theme form 'TenelevenFormHandlerBundle:Submission:fields.html.twig' %}
+<h1>Form Submission</h1>
+
+<table class="table">
+    <tr>
+        <th>Id</th>
+        <th>Type</th>
+        <th>Is Viewed</th>
+        <th>Created At</th>
+    </tr>
+    <tr>
+        <td>{{ submission.id }}</td>
+        <td>{{ submission.type }}</td>
+        <td>{{ submission.isViewed }}</td>
+        <td>{{ submission.createdAt|date('M d, Y h:m:s') }}</td>
+    </tr>
+</table>
+
+<table class="table">
+    {{ form(form) }}
+</table>

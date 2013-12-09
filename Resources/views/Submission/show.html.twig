@@ -1,17 +1,6 @@
 {% extends '::base.html.twig' %}
 
-{# import "_self" as the form theme #}
-{% form_theme form _self %}
-
-{# make the form fragment customization #}
-{% block form_row %}
-    {% spaceless %}
-        <tr>
-            <th>{{ form_label(form, label) }}</th>
-            <td>{{ form.vars.value }}</td>
-        </tr>
-    {% endspaceless %}
-{% endblock form_row %}
+{% form_theme form 'TenelevenFormHandlerBundle:Submission:fields.html.twig' %}
 
 {% block body -%}
     <h1>Submission</h1>
