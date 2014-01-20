@@ -126,6 +126,13 @@ class SubmissionController extends Controller
                 )
             );         
         }
+
+        return $this->render(
+            $this->container->getParameter(sprintf('teneleven_form_handler.%s.template', $type)),
+            array(
+                'form' => $form->createView()
+            )
+        );
     }
 
     /**

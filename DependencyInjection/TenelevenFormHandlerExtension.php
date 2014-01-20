@@ -50,6 +50,8 @@ class TenelevenFormHandlerExtension extends Extension
 
         $container->setParameter('teneleven_form_handler.'.$type.'.content_type', $config['content_type']);
 
+        $container->setParameter('teneleven_form_handler.'.$type.'.template', $config['template']);
+
         $container->setParameter('teneleven_form_handler.'.$type.'.email_template', $config['email_template']);
 
         $container->setParameter('teneleven_form_handler.'.$type.'.thanks_template', $config['thanks_template']);
