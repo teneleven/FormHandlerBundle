@@ -1,6 +1,5 @@
 {
 	"name": "teneleven/formhandlerbundle",
-	"version": "0.1",
 	"source": {
 	    "type": "git",
 	    "url": "git@teneleven.beanstalkapp.com:/teneleven/formhandlerbundle.git",
