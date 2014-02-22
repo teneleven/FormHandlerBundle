@@ -102,11 +102,15 @@ class SubmissionController extends Controller
 
         $form->handleRequest($request);
 
+        $config = $this->container->getParameter(sprintf('teneleven_form_handler.%s', $type));
+
         if ($form->isValid()) {
 
             $values = $form->getData();
 
-            $this->handleAttachments($values);
+            $config = $this->modifyConfigForValues($config, $values);
+
+            $attachments = $this->findAttachments($values);
 
             $submission = new Submission();
             $submission->setType($type);
@@ -116,10 +120,10 @@ class SubmissionController extends Controller
             $em->persist($submission);
             $em->flush();
 
-            $this->sendNotificationEmail($type, $form, $submission);
+            $this->sendNotificationEmail($config, $form, $attachments, $submission);
 
             return $this->render(
-                $this->container->getParameter(sprintf('teneleven_form_handler.%s.thanks_template', $type)),
+                $config['thanks_template'],
                 array(
                     'submission' => $submission, 
                     'form' => $form->createView()
@@ -128,11 +132,32 @@ class SubmissionController extends Controller
         }
 
         return $this->render(
-            $this->container->getParameter(sprintf('teneleven_form_handler.%s.template', $type)),
+            $config['template'],
             array(
                 'form' => $form->createView()
             )
         );
+    }
+
+    public function modifyConfigForValues($config, $values)
+    {
+        if (!isset($config['values'])) {
+            return $config;
+        }
+
+        if (!count($config['values'])) {
+            return $config;
+        }
+
+        foreach ($config['values'] as $key => $field_values) {
+            foreach ($field_values as $value => $new_config) {
+                if (isset($values[$key]) AND $values[$key] == $value) {
+                    $config = array_merge($config, $new_config);
+                }
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -141,16 +166,19 @@ class SubmissionController extends Controller
      * @param  array &$data [description]
      * @return [type]       [description]
      */
-    public function handleAttachments(&$data)
+    public function findAttachments(&$data)
     {
+        $attachments = array();
+
         foreach ($data as $key => $value) {
             if ($value instanceof UploadedFile) {
-                $this->attachments[] = $value;
-
+                $attachments[] = $value;
                 //Unset field because we cant serialize Objects
                 unset($data[$key]);
             }
         }
+
+        return $attachments;
     }
 
     /**
@@ -186,24 +214,28 @@ class SubmissionController extends Controller
      * 
      * @return null
      */
-    protected function sendNotificationEmail($type, $form, $submission)
+    protected function sendNotificationEmail($config, $form, array $attachments = array(), $submission)
     {
         try {
-
+            //Create new Message
             $message = \Swift_Message::newInstance()
-                ->setSubject($this->container->getParameter(sprintf('teneleven_form_handler.%s.subject', $type)))
-                ->setFrom($this->container->getParameter(sprintf('teneleven_form_handler.%s.from', $type)))
-                ->setTo($this->container->getParameter(sprintf('teneleven_form_handler.%s.to', $type)))
-                ->setContentType($this->container->getParameter(sprintf('teneleven_form_handler.%s.content_type', $type)))
+                ->setSubject($config['subject'])
+                ->setFrom($config['from'])
+                ->setTo($config['to'])
+                ->setContentType($config['content_type'])
                 ->setBody(
                     $this->renderView(
-                        $this->container->getParameter(sprintf('teneleven_form_handler.%s.email_template', $type)),
-                        array('form' => $form->createView(), 'submission' => $submission)
+                        $config['email_template'],
+                        array(
+                            'form' => $form->createView(), 
+                            'submission' => $submission
+                        )
                     )
                 )
             ;
 
-            foreach ($this->attachments as $file) {
+            //Attach any Files
+            foreach ($attachments as $file) {
                 $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
                 $message->attach($attachment);                    
             }

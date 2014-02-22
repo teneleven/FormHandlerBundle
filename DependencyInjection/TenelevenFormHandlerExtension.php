@@ -25,35 +25,10 @@ class TenelevenFormHandlerExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
-        foreach ($config['types'] as $type => $typeConfig) {
-            $this->configureType($type, $typeConfig, $container);
+        if (isset($config['types'] AND count($config['types'])) {
+            foreach ($config['types'] as $type => $typeConfig) {
+                $container->setParameter(sprintf('teneleven_form_handler.%s', $type), $typeConfig);    
+            }           
         }
-
-    }
-
-    /**
-     * Configure Form Type Handler Settings
-     * 
-     * @param  string           $type      Form Type name
-     * @param  array            $config    [description]
-     * @param  ContainerBuilder $container [description]
-     * 
-     * @return [type]                      [description]
-     */
-    protected function configureType($type, array $config, ContainerBuilder $container)
-    {
-        $container->setParameter('teneleven_form_handler.'.$type.'.from', $config['from']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.to', $config['to']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.subject', $config['subject']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.content_type', $config['content_type']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.template', $config['template']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.email_template', $config['email_template']);
-
-        $container->setParameter('teneleven_form_handler.'.$type.'.thanks_template', $config['thanks_template']);
     }
 }
