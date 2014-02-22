@@ -106,11 +106,11 @@ class SubmissionController extends Controller
 
         if ($form->isValid()) {
 
-            $values = $form->getData();
+            $data = $form->getData();
 
-            $config = $this->modifyConfigForValues($config, $values);
+            $config = $this->modifyConfigForValues($config, $data);
 
-            $attachments = $this->findAttachments($values);
+            $attachments = $this->findAttachments($data);
 
             $submission = new Submission();
             $submission->setType($type);
@@ -173,7 +173,6 @@ class SubmissionController extends Controller
         foreach ($data as $key => $value) {
             if ($value instanceof UploadedFile) {
                 $attachments[] = $value;
-                //Unset field because we cant serialize Objects
                 unset($data[$key]);
             }
         }
