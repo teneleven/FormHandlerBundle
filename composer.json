@@ -1,12 +1,23 @@
 {
-	"name": "teneleven/formhandlerbundle",
-	"source": {
-	    "type": "git",
-	    "url": "git@teneleven.beanstalkapp.com:/teneleven/formhandlerbundle.git",
-	    "reference": "master"
-	},
-	"autoload": {
-	    "psr-0": { "Teneleven\\Bundle\\FormHandlerBundle": "" }
-	},
-	"target-dir": "Teneleven/Bundle/FormHandlerBundle"
+    "name": "teneleven/formhandler-bundle",
+    "description" : "Simple Form Handler to Save Submissions and Send Notification Emails",
+    "version" : 0.1,
+    "type" : "symfony-bundle",
+    "keywords" : ["forms", "contact","submissions", "emails"],
+    "license" : "MIT",
+    "authors" : [{
+        "name" : "Justin Hilles",
+        "email": "justin@1011i.com",
+        "homepage" : "http://www.1011i.com",
+        "role" : "Developer"
+    }], 
+    "source": {
+        "type": "git",
+        "url": "git@teneleven.beanstalkapp.com:/teneleven/formhandlerbundle.git",
+        "reference": "master"
+    },
+    "autoload": {
+        "psr-0": { "Teneleven\\Bundle\\FormHandlerBundle": "" }
+    },
+    "target-dir": "Teneleven/Bundle/FormHandlerBundle"
 }
