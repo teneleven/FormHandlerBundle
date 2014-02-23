@@ -108,24 +108,22 @@ class SubmissionController extends Controller
 
             $data = $form->getData();
 
-            $config = $this->modifyConfigForValues($config, $data);
+            if (is_array($data)) {
+                $config = $this->modifyConfigForValues($config, $data);
 
-            $attachments = $this->findAttachments($data);
+                $attachments = $this->findAttachments($data);
 
-            $submission = new Submission();
-            $submission->setType($type);
-            $submission->setData(serialize($values));
+                $data = $this->createSubmission($type, $data);
+            }
 
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($submission);
-            $em->flush();
+            $this->saveSubmission($data);
 
-            $this->sendNotificationEmail($config, $form, $attachments, $submission);
+            $this->sendNotificationEmail($config, $form, $attachments, $data);
 
             return $this->render(
                 $config['thanks_template'],
                 array(
-                    'submission' => $submission, 
+                    'submission' => $data, 
                     'form' => $form->createView()
                 )
             );         
@@ -139,6 +137,28 @@ class SubmissionController extends Controller
         );
     }
 
+    public function createSubmission($type, $data)
+    {
+        $submission = new Submission();
+        $submission->setType($type);
+        $submission->setData(serialize($data));
+    }
+
+    public function saveSubmission($data)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($data);
+        $em->flush();        
+    }
+
+    /**
+     * Check for  a new config based on values
+     * 
+     * @param  [type] $config [description]
+     * @param  [type] $values [description]
+     * 
+     * @return $config
+     */
     public function modifyConfigForValues($config, $values)
     {
         if (!isset($config['values'])) {
@@ -192,7 +212,7 @@ class SubmissionController extends Controller
     {
         $form = $this->createForm(
             $type,
-            array(), 
+            null, 
             array('action' => $this->generateUrl('teneleven_formhandler_handle', array('type' => $type)))
         );
 
