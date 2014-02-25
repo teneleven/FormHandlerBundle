@@ -30,5 +30,9 @@ class TenelevenFormHandlerExtension extends Extension
                 $container->setParameter(sprintf('teneleven_form_handler.%s', $type), $type_config);    
             }           
         }
+
+        unset($config['types']);
+
+        $container->setParameter('teneleven_form_handler', $config);
     }
 }

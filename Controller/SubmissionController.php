@@ -96,39 +96,75 @@ class SubmissionController extends Controller
      * 
      * @return null
      */
-    public function handleAction($type, Request $request)
+    public function handleAction($type, Request $request, $config = array())
     {
+        //Get Base config
+        $config = array_merge($config, $this->container->getParameter('teneleven_form_handler', array()));
+
+        //Create Form
         $form = $this->createForm($type);
 
+        //Bind Form
         $form->handleRequest($request);
 
-        $config = $this->container->getParameter(sprintf('teneleven_form_handler.%s', $type));
+        //Get Form Name
+        $name = $form->getName();
 
+        //Create Parameter key for Type
+        $type_parameter_key = sprintf('teneleven_form_handler.%s', $type);
+
+        //Check if Config is set for this Type
+        if ($this->container->hasParameter($type_parameter_key)) {
+
+            //Get Config for that type
+            $type_config = $this->container->getParameter($type_parameter_key);
+
+            //Merge into master config
+            $config = array_merge($config, $type_config);
+        }
+
+        //Get Data Class for Form,  if any
+        $data_class = $form->getConfig()->getDataClass();
+
+        //Check if Form is Valid
         if ($form->isValid()) {
 
-            $data = $form->getData();
+            //Get Form Submission
+            $submission = $form->getData();
 
-            if (is_array($data)) {
-                $config = $this->modifyConfigForValues($config, $data);
+            //Check if Submission is Array
+            if (is_array($submission)) {
 
-                $attachments = $this->findAttachments($data);
-
-                $data = $this->createSubmission($type, $data);
+                //Create Submission from array
+                $submission = $this->createSubmission($type, $submission);
             }
 
-            $this->saveSubmission($data);
+            //Get Request Values for Form
+            $values = $request->request->has($name) ? $request->request->get($name) : array();
 
-            $this->sendNotificationEmail($config, $form, $attachments, $data);
+            //Find all attachments
+            $attachments = $this->findAttachments($values);
 
+            //Allow Config to be overriden
+            $config = $this->modifyConfigForValues($config, $values);
+
+            //Save the Submission
+            $this->saveSubmission($submission);
+
+            //Send Notification Email based on config
+            $this->sendNotificationEmail($config, $form, $attachments, $submission);
+
+            //Return Thanks Page
             return $this->render(
                 $config['thanks_template'],
                 array(
-                    'submission' => $data, 
+                    'data' => $submission, 
                     'form' => $form->createView()
                 )
             );         
         }
 
+        //Return to Form Page with Errors
         return $this->render(
             $config['template'],
             array(
@@ -142,12 +178,14 @@ class SubmissionController extends Controller
         $submission = new Submission();
         $submission->setType($type);
         $submission->setData(serialize($data));
+
+        return $submission;
     }
 
-    public function saveSubmission($data)
+    public function saveSubmission($submission)
     {
         $em = $this->getDoctrine()->getManager();
-        $em->persist($data);
+        $em->persist($submission);
         $em->flush();        
     }
 
@@ -171,11 +209,14 @@ class SubmissionController extends Controller
 
         foreach ($config['values'] as $key => $field_values) {
             foreach ($field_values as $value => $new_config) {
-                if (isset($values[$key]) AND $values[$key] == $value) {
+                if (isset($values[$key]) AND  $value == $values[$key]) {
                     $config = array_merge($config, $new_config);
                 }
             }
         }
+
+        //No longer needed
+        unset($config['values']);
 
         return $config;
     }
@@ -247,7 +288,7 @@ class SubmissionController extends Controller
                         $config['email_template'],
                         array(
                             'form' => $form->createView(), 
-                            'submission' => $submission
+                            'data' => $submission
                         )
                     )
                 )
