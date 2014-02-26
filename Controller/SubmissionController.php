@@ -16,7 +16,6 @@ namespace Teneleven\Bundle\FormHandlerBundle\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
 use Teneleven\Bundle\FormHandlerBundle\Entity\Submission;
 use Teneleven\Bundle\FormHandlerBundle\Form\SubmissionType;
 
@@ -96,10 +95,10 @@ class SubmissionController extends Controller
      * 
      * @return null
      */
-    public function handleAction($type, Request $request, $config = array())
+    public function handleAction(Request $request, $type, array $config = array())
     {
-        //Get Base config
-        $config = array_merge($config, $this->container->getParameter('teneleven_form_handler', array()));
+        //Get Config
+        $config = $this->createConfig($type, $config);
 
         //Create Form
         $form = $this->createForm($type);
@@ -108,29 +107,16 @@ class SubmissionController extends Controller
         $form->handleRequest($request);
 
         //Get Form Name
-        $name = $form->getName();
-
-        //Create Parameter key for Type
-        $type_parameter_key = sprintf('teneleven_form_handler.%s', $type);
-
-        //Check if Config is set for this Type
-        if ($this->container->hasParameter($type_parameter_key)) {
-
-            //Get Config for that type
-            $type_config = $this->container->getParameter($type_parameter_key);
-
-            //Merge into master config
-            $config = array_merge($config, $type_config);
-        }
-
-        //Get Data Class for Form,  if any
-        $data_class = $form->getConfig()->getDataClass();
+        $name = (string) $form->getName();
 
         //Check if Form is Valid
         if ($form->isValid()) {
 
             //Get Form Submission
             $submission = $form->getData();
+
+            //Find all attachments
+            $attachments = $this->findAttachments($submission);
 
             //Check if Submission is Array
             if (is_array($submission)) {
@@ -142,50 +128,72 @@ class SubmissionController extends Controller
             //Get Request Values for Form
             $values = $request->request->has($name) ? $request->request->get($name) : array();
 
-            //Find all attachments
-            $attachments = $this->findAttachments($values);
-
             //Allow Config to be overriden
-            $config = $this->modifyConfigForValues($config, $values);
+            $config = $this->overrideConfig($config, $values);
 
             //Save the Submission
-            $this->saveSubmission($submission);
+            $this->save($submission);
+
+            //Get Reflection
+            $reflect = new \ReflectionClass($submission);
+
+            //Get Short name
+            $class = $reflect->getShortName();
+
+            $params =  array(
+                //Pass Raw Form Values
+                'data' => $values,
+                //Pass Object keyed by Class name
+                strtolower($class) => $submission, 
+                //Pass form
+                'form' => $form->createView(),
+                //Pass Attachments
+                'attachments' => $attachments
+            );
 
             //Send Notification Email based on config
-            $this->sendNotificationEmail($config, $form, $attachments, $submission);
+            $this->sendEmail($config, $params);
 
             //Return Thanks Page
             return $this->render(
                 $config['thanks_template'],
-                array(
-                    'data' => $submission, 
-                    'form' => $form->createView()
-                )
+                $params
             );         
         }
 
         //Return to Form Page with Errors
         return $this->render(
             $config['template'],
-            array(
-                'form' => $form->createView()
-            )
+            $params
         );
     }
 
-    public function createSubmission($type, $data)
+    /**
+     * Create New Form Submission for passed array
+     * 
+     * @param  [type] $type Container type string
+     * @param  array  $data Values from form
+     * 
+     * @return Submission 
+     */
+    protected function createSubmission($type, array $data)
     {
         $submission = new Submission();
         $submission->setType($type);
-        $submission->setData(serialize($data));
+        $submission->setData(serialize((array) $data));
 
         return $submission;
     }
 
-    public function saveSubmission($submission)
+    /**
+     * Save Submission
+     * 
+     * @param  [type] $submission [description]
+     */
+    protected function save($object)
     {
         $em = $this->getDoctrine()->getManager();
-        $em->persist($submission);
+        $em->persist($object);
         $em->flush();        
     }
 
@@ -197,26 +205,41 @@ class SubmissionController extends Controller
      * 
      * @return $config
      */
-    public function modifyConfigForValues($config, $values)
+    public function overrideConfig(array $config, $values)
     {
-        if (!isset($config['values'])) {
-            return $config;
-        }
-
-        if (!count($config['values'])) {
-            return $config;
-        }
-
-        foreach ($config['values'] as $key => $field_values) {
-            foreach ($field_values as $value => $new_config) {
-                if (isset($values[$key]) AND  $value == $values[$key]) {
-                    $config = array_merge($config, $new_config);
+        if (isset($config['values']) AND count($config['values'])) {
+            foreach ($config['values'] as $key => $field_values) {
+                foreach ($field_values as $value => $new_config) {
+                    if (isset($values[$key]) AND  $value == $values[$key]) {
+                        $config = (array) array_merge($config, $new_config);
+                    }
                 }
             }
         }
 
         //No longer needed
         unset($config['values']);
+
+        return (array) $config;
+    }
+
+    public function createConfig($type, $config = array())
+    {
+        //Get Base config
+        $config = (array) array_merge($config, (array) $this->container->getParameter('teneleven_form_handler', array()));
+
+        //Create Parameter key for Type
+        $type_parameter_key = (string) sprintf('teneleven_form_handler.%s', $type);
+
+        //Check if Config is set for this Type
+        if ($this->container->hasParameter($type_parameter_key)) {
+
+            //Get Config for that type
+            $type_config = $this->container->getParameter($type_parameter_key, array());
+
+            //Merge into master config
+            $config = (array) array_merge($config, $type_config);
+        } 
 
         return $config;
     }
@@ -227,7 +250,7 @@ class SubmissionController extends Controller
      * @param  array &$data [description]
      * @return [type]       [description]
      */
-    public function findAttachments(&$data)
+    public function findAttachments(array &$data)
     {
         $attachments = array();
 
@@ -238,7 +261,7 @@ class SubmissionController extends Controller
             }
         }
 
-        return $attachments;
+        return (array) $attachments;
     }
 
     /**
@@ -249,11 +272,11 @@ class SubmissionController extends Controller
      * 
      * @return Response
      */
-    public function formAction($type, $template = 'TenelevenFormHandlerBundle:Submission:_form.html.twig')
+    public function formAction($type, $submission = null, $template = 'TenelevenFormHandlerBundle:Submission:_form.html.twig')
     {
         $form = $this->createForm(
-            $type,
-            null, 
+            (string) $type,
+            $submission, 
             array('action' => $this->generateUrl('teneleven_formhandler_handle', array('type' => $type)))
         );
 
@@ -272,11 +295,12 @@ class SubmissionController extends Controller
      * @param string $type Service key of Form
      * @param Object $form Form
      * 
-     * @return null
+     * @return bool
      */
-    protected function sendNotificationEmail($config, $form, array $attachments = array(), $submission)
+    protected function sendEmail(array $config, array $params = array())
     {
         try {
+
             //Create new Message
             $message = \Swift_Message::newInstance()
                 ->setSubject($config['subject'])
@@ -286,21 +310,20 @@ class SubmissionController extends Controller
                 ->setBody(
                     $this->renderView(
                         $config['email_template'],
-                        array(
-                            'form' => $form->createView(), 
-                            'data' => $submission
-                        )
+                        $params
                     )
                 )
             ;
 
             //Attach any Files
-            foreach ($attachments as $file) {
-                $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
-                $message->attach($attachment);                    
+            if (isset($params['attachments']) AND count($params['attachments'])) {
+                foreach ($params['attachments'] as $file) {
+                    $attachment = \Swift_Attachment::fromPath($file->getRealPath())->setFilename($file->getClientOriginalName());
+                    $message->attach($attachment);                    
+                }
             }
 
-            $result = $this->get('mailer')->send($message);
+            return (bool) $this->get('mailer')->send($message);
 
         } catch(Exception $e) {
             //@todo Need to do something here

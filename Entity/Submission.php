@@ -45,7 +45,6 @@ class Submission
         $this->updatedAt = new \DateTime();
     }
 
-
     /**
      * Get id
      *
