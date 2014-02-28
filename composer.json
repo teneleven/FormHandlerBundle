@@ -1,5 +1,5 @@
 {
-    "name": "teneleven/formhandler-bundle",
+    "name": "teneleven/formhandlerbundle",
     "description" : "Simple Form Handler to Save Submissions and Send Notification Emails",
     "type" : "symfony-bundle",
     "keywords" : ["forms", "contact","submissions", "emails"],
