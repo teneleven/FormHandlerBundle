@@ -1,7 +1,6 @@
 {
     "name": "teneleven/formhandler-bundle",
     "description" : "Simple Form Handler to Save Submissions and Send Notification Emails",
-    "version" : "0.1",
     "type" : "symfony-bundle",
     "keywords" : ["forms", "contact","submissions", "emails"],
     "license" : "MIT",
