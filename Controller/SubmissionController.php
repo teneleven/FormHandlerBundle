@@ -164,7 +164,7 @@ class SubmissionController extends Controller
         //Return to Form Page with Errors
         return $this->render(
             $config['template'],
-            $params
+            array('form' => $form->createView())
         );
     }
 
