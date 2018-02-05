@@ -97,6 +97,11 @@ class SubmissionController extends Controller
      */
     public function handleAction(Request $request, $type, array $config = array())
     {
+        //Ensure type exists
+        if (!$this->get('form.registry')->hasType($type)) {
+            throw $this->createNotFoundException();
+        }
+
         //Get Config
         $config = $this->createConfig($type, $config);
 
