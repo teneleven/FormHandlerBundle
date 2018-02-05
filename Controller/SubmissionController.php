@@ -97,8 +97,8 @@ class SubmissionController extends Controller
      */
     public function handleAction(Request $request, $type, array $config = array())
     {
-        //Ensure type exists
-        if (!$this->get('form.registry')->hasType($type)) {
+        //Ensure this is a defined type
+        if (!in_array($type, $this->getParameter('teneleven_form_handler_types'))) {
             throw $this->createNotFoundException();
         }
 

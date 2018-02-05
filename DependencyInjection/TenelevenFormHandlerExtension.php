@@ -26,6 +26,7 @@ class TenelevenFormHandlerExtension extends Extension
         $loader->load('services.xml');
 
         if (isset($config['types']) AND count($config['types'])) {
+            $container->setParameter('teneleven_form_handler_types', array_keys($config['types']));
             foreach ($config['types'] as $type => $type_config) {
                 $container->setParameter(sprintf('teneleven_form_handler.%s', $type), $type_config);    
             }           
