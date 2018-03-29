@@ -325,18 +325,17 @@ class SubmissionController extends Controller
         try {
 
             //Create new Message
-            $message = \Swift_Message::newInstance()
-                ->setSubject($config['subject'])
-                ->setFrom($config['from'])
-                ->setTo($config['to'])
-                ->setContentType($config['content_type'])
-                ->setBody(
-                    $this->renderView(
-                        $config['email_template'],
-                        $params
-                    )
+            $message = new \Swift_Message();
+            $message->setSubject($config['subject']);
+            $message->setFrom($config['from']);
+            $message->setTo($config['to']);
+            $message->setContentType($config['content_type']);
+            $message->setBody(
+                $this->renderView(
+                    $config['email_template'],
+                    $params
                 )
-            ;
+            );
 
             //Attach any Files
             if (isset($params['attachments']) AND count($params['attachments'])) {
