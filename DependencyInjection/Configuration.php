@@ -52,6 +52,7 @@ class Configuration implements ConfigurationInterface
                                 ->scalarNode('template')->end()
                                 ->scalarNode('email_template')->end()
                                 ->scalarNode('thanks_template')->end()
+                                ->scalarNode('form')->end()
                                 ->arrayNode('values')
                                     ->prototype('array')
                                             ->prototype('array')

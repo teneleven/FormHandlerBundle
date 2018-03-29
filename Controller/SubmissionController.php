@@ -18,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Teneleven\Bundle\FormHandlerBundle\Entity\Submission;
 use Teneleven\Bundle\FormHandlerBundle\Form\SubmissionType;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Submission controller.
@@ -105,8 +106,16 @@ class SubmissionController extends Controller
         //Get Config
         $config = $this->createConfig($type, $config);
 
+        // support configurable form class
+        $formType = (string) $type;
+        if ($this->container->hasParameter(sprintf('teneleven_form_handler.%s', $type))) {
+            // lookup form configuration
+            $configuration = $this->container->getParameter(sprintf('teneleven_form_handler.%s', $type));
+            $formType = (string) $configuration['form'];
+        }
+
         //Create Form
-        $form = $this->createForm($type);
+        $form = $this->createForm($formType);
 
         //Bind Form
         $form->handleRequest($request);
@@ -279,8 +288,17 @@ class SubmissionController extends Controller
      */
     public function formAction($type, $submission = null, $template = 'TenelevenFormHandlerBundle:Submission:_form.html.twig')
     {
+        // support configurable form class
+        $formType = (string) $type;
+
+        if ($this->container->hasParameter(sprintf('teneleven_form_handler.%s', $type))) {
+            // lookup form configuration
+            $configuration = $this->container->getParameter(sprintf('teneleven_form_handler.%s', $type));
+            $formType = (string) $configuration['form'];
+        }
+
         $form = $this->createForm(
-            (string) $type,
+            $formType,
             $submission, 
             array('action' => $this->generateUrl('teneleven_formhandler_handle', array('type' => $type)))
         );
