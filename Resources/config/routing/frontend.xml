@@ -4,15 +4,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="teneleven_formhandler_handle" pattern="/{type}" methods="POST">
+    <route id="teneleven_formhandler_handle" path="/{type}" methods="POST">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:handle</default>
     </route>
 
-    <route id="teneleven_formhandler_form" pattern="/{type}/form" methods="GET">
+    <route id="teneleven_formhandler_form" path="/{type}/form" methods="GET">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:form</default>
     </route>
 
-    <route id="teneleven_formhandler_sample" pattern="/contact">
+    <route id="teneleven_formhandler_sample" path="/contact">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:form</default>
         <default key="template">TenelevenFormHandlerBundle:Submission:default.html.twig</default>
         <default key="type">contact_form</default>

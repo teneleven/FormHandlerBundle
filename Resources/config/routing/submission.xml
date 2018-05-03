@@ -4,11 +4,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="submission" pattern="/">
+    <route id="submission" path="/">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:index</default>
     </route>
 
-    <route id="submission_show" pattern="/{id}/show">
+    <route id="submission_show" path="/{id}/show">
         <default key="_controller">TenelevenFormHandlerBundle:Submission:show</default>
     </route>
 </routes>
